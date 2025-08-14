@@ -119,7 +119,7 @@ Choose your installation method based on your current setup:
 ### 🆕 New Users (No existing ~/.claude setup)
 ```bash
 # Simple installation
-git clone https://github.com/your-username/claude-code-studio.git ~/.claude
+git clone https://github.com/p32929/claude-code-studio.git ~/.claude
 cd ~/.claude
 
 # Customize your environment
@@ -135,7 +135,7 @@ cp CONTEXT_TEMPLATE.md CONTEXT.md
 cp -r ~/.claude ~/.claude-backup
 
 # 2. Install studio (replaces existing)
-git clone https://github.com/your-username/claude-code-studio.git ~/.claude
+git clone https://github.com/p32929/claude-code-studio.git ~/.claude
 cd ~/.claude
 
 # 3. Restore your personal files
