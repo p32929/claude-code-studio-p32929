@@ -25,3 +25,5 @@ node_modules/
 # CONTEXT.md
 
 reddit-post.md
+/configs/*
+!/configs/settings.json

@@ -1,48 +1,60 @@
 #!/bin/bash
 
 # Claude Code Studio - Config Restore Script
-# Cross-platform restore functionality for Claude Desktop configurations
+# Cross-platform restore functionality for Claude Code (CLI) configurations
 # Allows easy restoration of any previous configuration backup
 
-set -e  # Exit on error
+set +e  # Don't exit on error immediately
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+# Check if terminal supports colors
+if [ -t 1 ] && command -v tput >/dev/null 2>&1 && tput colors >/dev/null 2>&1 && [ "$(tput colors)" -ge 8 ]; then
+    # Colors for output
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    MAGENTA='\033[0;35m'
+    CYAN='\033[0;36m'
+    NC='\033[0m' # No Color
+else
+    # No colors
+    RED=''
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    MAGENTA=''
+    CYAN=''
+    NC=''
+fi
 
 # Project paths
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONFIGS_DIR="$SCRIPT_DIR/configs"
-CURRENT_CONFIG="$CONFIGS_DIR/claude_desktop_config.json"
+CURRENT_CONFIG="$CONFIGS_DIR/settings.json"
 
 # Function to print colored output
 print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    printf "${BLUE}[INFO]${NC} %s\n" "$1"
 }
 
 print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    printf "${GREEN}[SUCCESS]${NC} %s\n" "$1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    printf "${YELLOW}[WARNING]${NC} %s\n" "$1"
 }
 
 print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    printf "${RED}[ERROR]${NC} %s\n" "$1"
 }
 
 print_restore() {
-    echo -e "${MAGENTA}[RESTORE]${NC} $1"
+    printf "${MAGENTA}[RESTORE]${NC} %s\n" "$1"
 }
 
 print_backup() {
-    echo -e "${CYAN}[BACKUP]${NC} $1"
+    printf "${CYAN}[BACKUP]${NC} %s\n" "$1"
 }
 
 # Function to find Claude config file
@@ -56,10 +68,10 @@ find_claude_config() {
     
     # List of possible config names in order of likelihood
     local config_names=(
-        "claude_desktop_config.json"
-        ".claude.json"
-        "claude_config.json"
+        "settings.json"
         "config.json"
+        "claude_code_config.json"
+        ".claude.json"
     )
     
     # Check each possible name
@@ -105,29 +117,28 @@ create_pre_restore_backup() {
     return 0
 }
 
-# Detect OS and set config directory
+# Detect OS and set config directory for Claude Code (CLI)
 OS_TYPE="unknown"
 CONFIG_DIR=""
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     OS_TYPE="macOS"
-    CONFIG_DIR="$HOME/Library/Application Support/Claude"
+    CONFIG_DIR="$HOME/.config/claude-code"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     OS_TYPE="Linux"
-    CONFIG_DIR="$HOME/.config/Claude"
+    CONFIG_DIR="$HOME/.config/claude-code"
     # Check if running in WSL
     if grep -qi microsoft /proc/version 2>/dev/null; then
         OS_TYPE="WSL2/Linux"
     fi
 elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "win32" ]]; then
     OS_TYPE="Windows"
-    if [ -n "$APPDATA" ]; then
-        CONFIG_DIR="$APPDATA/Claude"
-    elif [ -n "$USERPROFILE" ]; then
-        CONFIG_DIR="$USERPROFILE/AppData/Roaming/Claude"
+    CONFIG_DIR="$HOME/.config/claude-code"
+    if [ -z "$HOME" ]; then
+        CONFIG_DIR="$USERPROFILE/.config/claude-code"
     fi
 else
-    print_warning "Unknown OS. Please manually configure Claude Desktop."
+    print_warning "Unknown OS. Please manually configure Claude Code."
     CONFIG_DIR=""
 fi
 
@@ -142,12 +153,12 @@ if [ -n "$CONFIG_DIR" ]; then
         print_success "Found existing config: $ORIGINAL_CONFIG_NAME"
     else
         # Use default name if no config found
-        CONFIG_PATH="$CONFIG_DIR/claude_desktop_config.json"
-        ORIGINAL_CONFIG_NAME="claude_desktop_config.json"
+        CONFIG_PATH="$CONFIG_DIR/settings.json"
+        ORIGINAL_CONFIG_NAME="settings.json"
         print_status "No existing config found. Will restore to: $ORIGINAL_CONFIG_NAME"
     fi
 else
-    print_error "Could not determine Claude Desktop config location."
+    print_error "Could not determine Claude Code config location."
     exit 1
 fi
 
@@ -187,8 +198,8 @@ declare -a BACKUP_PATHS
 
 # Add current config if it exists
 if [ -f "$CURRENT_CONFIG" ]; then
-    echo "  0) claude_desktop_config.json (current/latest)"
-    BACKUP_NAMES[0]="claude_desktop_config.json"
+    echo "  0) settings.json (current/latest)"
+    BACKUP_NAMES[0]="settings.json"
     BACKUP_PATHS[0]="$CURRENT_CONFIG"
     START_INDEX=1
 else
@@ -227,7 +238,7 @@ for backup in "${BACKUPS[@]}"; do
                 ;;
         esac
         
-        echo -e "  $INDEX) $DATE $TIME_FORMATTED $TYPE_COLOR - $CONFIG_NAME"
+        printf "  %s) %s %s %s - %s\n" "$INDEX" "$DATE" "$TIME_FORMATTED" "$TYPE_COLOR" "$CONFIG_NAME"
     else
         echo "  $INDEX) $BASENAME"
     fi
@@ -317,8 +328,8 @@ echo "================================================"
 echo ""
 
 echo "Next steps:"
-echo "1. Restart Claude Desktop to load the restored configuration"
-echo "2. Check MCP server status in Claude Desktop settings"
+echo "1. Restart Claude Code (CLI) to load the restored configuration"
+echo "2. Check MCP server status with: claude-code --mcp-list"
 echo ""
 
 if [ "$EXISTING_CONFIG" = true ]; then

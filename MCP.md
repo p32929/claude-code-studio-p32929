@@ -20,9 +20,7 @@ npx -y @modelcontextprotocol/server-git
 
 # Serena - Code analysis and refactoring
 npm install -g @modelcontextprotocol/server-serena
-
-# IDE - VS Code integration (if using VS Code)
-# Install via VS Code extension marketplace: "MCP Server for VS Code"
+# Note: Browser auto-open is disabled in config with SERENA_NO_BROWSER=true
 ```
 
 #### 2. Documentation Servers
@@ -46,9 +44,9 @@ npm install -g @modelcontextprotocol/server-puppeteer
 ```
 
 
-### Claude Desktop Configuration
+### Claude Code (CLI) Configuration
 
-Add to your Claude Desktop config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+Add to your Claude Code config file (`~/.config/claude-code/settings.json` on all platforms):
 
 ```json
 {
@@ -59,11 +57,11 @@ Add to your Claude Desktop config file (`~/Library/Application Support/Claude/cl
     },
     "serena": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-serena"]
-    },
-    "ide": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-ide"]
+      "args": ["-y", "@modelcontextprotocol/server-serena"],
+      "env": {
+        "SERENA_NO_BROWSER": "true",
+        "BROWSER": "none"
+      }
     },
     "context7": {
       "command": "npx",
@@ -102,7 +100,7 @@ npx @modelcontextprotocol/server-git --version
 ```
 
 ## SERVER CATEGORIES
-**Core Development**: git, serena, ide | **Documentation**: context7, sequential-thinking | **Testing**: playwright, puppeteer
+**Core Development**: git, serena | **Documentation**: context7, sequential-thinking | **Testing**: playwright, puppeteer
 
 ## AGENT-MCP COORDINATION
 
@@ -114,7 +112,7 @@ npx @modelcontextprotocol/server-git --version
 - **context-fetcher**: Documentation (Read, Glob, WebFetch)
 
 ### Specialized Agent Patterns
-- **Testing**: test-writer-fixer → playwright/ide → validation
+- **Testing**: test-writer-fixer → playwright/puppeteer → validation
 - **Code Analysis**: Engineering agents → serena/sequential-thinking → insights
 - **Error Resolution**: backend-architect → debugging tools → diagnosis
 - **Deployment**: devops-automator → git → custom deployment
@@ -136,11 +134,10 @@ complex_analysis:
 
 ## ERROR RECOVERY & FALLBACKS
 - **git** → Manual git commands → Note version control limitations  
+- **serena** → Text-based code analysis → Note semantic analysis limitations
 - **context7** → WebSearch → Manual documentation lookup
 - **sequential-thinking** → Native analysis → Note complexity limitations
 - **puppeteer/playwright** → Manual testing → Provide test cases and fallback instructions
-- **serena** → Text-based code analysis → Note semantic analysis limitations
-- **ide** → Text-based diagnostics → Note development environment limitations
 
 ## ANTI-PATTERNS & USAGE WARNINGS
 
@@ -167,11 +164,10 @@ stop_execution_when:
 
 ### Tool Performance Profiles
 - **git_operations**: 50-200ms, minimal tokens, parallel_safe
+- **serena_operations**: 100-2000ms, low-medium tokens, parallel_safe
 - **browser_automation**: 800-5000ms, medium tokens, resource_intensive, NOT parallel_safe
 - **sequential_thinking**: 1000-10000ms, high-very_high tokens, parallel_safe
-- **serena_operations**: 100-2000ms, low-medium tokens, parallel_safe
 - **context7_operations**: 200-5000ms, low-high tokens, parallel_safe
-- **ide_operations**: 50-500ms, minimal tokens, parallel_safe
 
 ## MCP SERVER CAPABILITIES
 
@@ -182,10 +178,7 @@ stop_execution_when:
 ### Serena Server
 **Tools Available**: analyze_code, refactor_code, suggest_improvements, find_patterns, extract_functions
 **Use Cases**: Code quality analysis, refactoring suggestions, pattern detection, architectural improvements
-
-### IDE Server (VS Code)
-**Tools Available**: get_diagnostics, execute_code, get_symbols, find_references, get_hover_info
-**Use Cases**: Real-time error detection, code execution, symbol navigation, intelligent code assistance
+**Note**: Browser auto-open disabled with SERENA_NO_BROWSER=true
 
 ### Context7 Server
 **Tools Available**: search_docs, index_content, retrieve_context, manage_knowledge
