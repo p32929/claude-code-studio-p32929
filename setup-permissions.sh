@@ -180,6 +180,7 @@ declare -a COMMANDS=(
     "sync:Flush filesystem buffers:caution"
     "fsck:Check and repair filesystems:danger"
     "mkfs:Create filesystems:danger"
+    "mcp__*:All MCP tools - Global permission for all MCP servers:safe"
 )
 
 # Header
@@ -249,6 +250,7 @@ echo "• Enter 'common' to select most commonly used commands (1-40)"
 echo "• Enter 'dev' to select development-related commands"
 echo "• Enter 'system' to select system administration commands"
 echo "• Enter 'safe' to select only safe commands (green)"
+echo "• Enter 'mcp' to allow all MCP server tools"
 echo ""
 
 # Get user selection
@@ -309,6 +311,16 @@ while true; do
                 IFS=':' read -r cmd desc danger_level <<< "${COMMANDS[$i]}"
                 if [ "$danger_level" = "safe" ]; then
                     selected_indices+=($i)
+                fi
+            done
+            ;;
+        "mcp")
+            # All MCP server tools - just select the mcp__* entry
+            for i in "${!COMMANDS[@]}"; do
+                IFS=':' read -r cmd desc danger_level <<< "${COMMANDS[$i]}"
+                if [ "$cmd" = "mcp__*" ]; then
+                    selected_indices+=($i)
+                    break
                 fi
             done
             ;;
@@ -425,7 +437,14 @@ for cmd in "${selected_commands[@]}"; do
     if [ -n "$allowed_tools_json" ]; then
         allowed_tools_json="$allowed_tools_json, "
     fi
-    allowed_tools_json="$allowed_tools_json\"Bash($cmd:*)\""
+    # Handle MCP tools differently than Bash commands
+    if [[ "$cmd" =~ ^mcp__ ]]; then
+        # For MCP tools, use the exact pattern
+        allowed_tools_json="$allowed_tools_json\"$cmd\""
+    else
+        # For Bash commands, use Bash(command:*) format
+        allowed_tools_json="$allowed_tools_json\"Bash($cmd:*)\""
+    fi
 done
 
 # Use jq to update the config if available, otherwise use a simple approach
@@ -460,7 +479,11 @@ if grep -q "allowedTools" "$CONFIG_FILE"; then
     echo ""
     print_status "Allowed commands:"
     for cmd in "${selected_commands[@]}"; do
-        printf "  ${GREEN}✓${NC} Bash(%s:*)\n" "$cmd"
+        if [[ "$cmd" =~ ^mcp__ ]]; then
+            printf "  ${GREEN}✓${NC} %s\n" "$cmd"
+        else
+            printf "  ${GREEN}✓${NC} Bash(%s:*)\n" "$cmd"
+        fi
     done
 else
     print_error "Failed to update configuration. Please check manually."
@@ -477,7 +500,11 @@ print_success "Global permissions have been configured!"
 echo ""
 echo "Selected commands will now be automatically allowed in Claude Code CLI:"
 for cmd in "${selected_commands[@]}"; do
-    printf "  ${GREEN}✓${NC} %s\n" "$cmd"
+    if [[ "$cmd" =~ ^mcp__ ]]; then
+        printf "  ${GREEN}✓${NC} %s (MCP Tool)\n" "$cmd"
+    else
+        printf "  ${GREEN}✓${NC} %s (Bash Command)\n" "$cmd"
+    fi
 done
 
 echo ""
