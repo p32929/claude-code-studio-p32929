@@ -119,7 +119,7 @@ Choose your installation method based on your current setup:
 ### 🆕 New Users (No existing ~/.claude setup)
 ```bash
 # Simple installation
-git clone https://github.com/p32929/claude-code-studio.git ~/.claude
+git clone https://github.com/p32929/https://github.com/p32929/claude-code-studio-p32929.git ~/.claude
 cd ~/.claude
 
 # Customize your environment
