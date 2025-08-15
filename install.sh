@@ -99,7 +99,7 @@ add_mcp_server() {
     local server_name=$1
     local server_config=$2
     
-    print_status "Adding $server_name to Claude Code CLI..."
+    print_status "Adding $server_name to Claude Code CLI (user scope)..."
     
     # Check if claude command exists
     if ! command_exists claude; then
@@ -107,8 +107,8 @@ add_mcp_server() {
         return 1
     fi
     
-    # Add the server using claude mcp add-json
-    if claude mcp add-json "$server_name" "$server_config" 2>/dev/null; then
+    # Add the server using claude mcp add-json with user scope for global access
+    if claude mcp add-json --scope user "$server_name" "$server_config" 2>/dev/null; then
         print_success "$server_name added successfully"
         return 0
     else
@@ -216,6 +216,17 @@ echo "          Adding Essential MCP Servers          "
 echo "================================================"
 echo ""
 
+print_status "Installing essential MCP servers globally..."
+echo ""
+
+# Install essential servers globally first
+print_status "Installing @modelcontextprotocol/server-sequential-thinking..."
+npm install -g @modelcontextprotocol/server-sequential-thinking
+
+print_status "Installing @modelcontextprotocol/server-filesystem..."
+npm install -g @modelcontextprotocol/server-filesystem
+
+echo ""
 print_status "Adding essential servers to Claude Code CLI:"
 echo ""
 
@@ -223,7 +234,7 @@ echo ""
 add_mcp_server "git" '{"command": "uvx", "args": ["mcp-server-git"]}'
 
 # Sequential Thinking - Problem solving and analysis
-add_mcp_server "sequential-thinking" '{"command": "npx", "args": ["@modelcontextprotocol/server-sequential-thinking"]}'
+add_mcp_server "sequential-thinking" '{"command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]}'
 
 # Filesystem - File operations
 add_mcp_server "filesystem" '{"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem"]}'
@@ -240,6 +251,17 @@ read -p "Do you want to add optional MCP servers? (y/n): " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    print_status "Installing optional MCP servers globally..."
+    echo ""
+    
+    # Install optional servers globally first
+    print_status "Installing @hisma/server-puppeteer..."
+    npm install -g @hisma/server-puppeteer
+    
+    print_status "Installing @modelcontextprotocol/server-memory..."
+    npm install -g @modelcontextprotocol/server-memory
+    
     echo ""
     print_status "Adding optional servers to Claude Code CLI..."
     echo ""
