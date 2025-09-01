@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "ccheckpoints track --event=submit"
+            "command": "ccheckpoints track --event=submit || echo \"CCheckpoints not found. Run: npm install -g ccheckpoints@latest\""
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "ccheckpoints track --event=stop"
+            "command": "ccheckpoints track --event=stop || echo \"CCheckpoints not found. Run: npm install -g ccheckpoints@latest\""
           }
         ]
       }
